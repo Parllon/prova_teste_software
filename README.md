@@ -183,55 +183,6 @@ mvn -Dtest=LoginTest test
 | TC009 | Sem data | ❌ Erro |
 | TC010 | Todos preenchidos | ✅ Sucesso |
 
-#### 🟡 Validação de Dados (TC011-TC018)
-
-| ID | Cenário |
-|----|---------|
-| TC011 | Quantidade com letras |
-| TC012 | Quantidade negativa |
-| TC013 | Valor com letras |
-| TC014 | Valor negativo |
-| TC015 | Código com caracteres especiais |
-| TC016 | Nome com números |
-| TC017 | Valor com vírgula |
-| TC018 | Data futura |
-
-#### 🟢 Limites/Boundary (TC019-TC024)
-
-| ID | Cenário |
-|----|---------|
-| TC019 | Código muito longo (100 chars) |
-| TC020 | Nome muito longo (200 chars) |
-| TC021 | Quantidade zero |
-| TC022 | Valor zero |
-| TC023 | Quantidade muito grande |
-| TC024 | Campos com espaços em branco |
-
-#### 🔵 Interface/Usabilidade (TC025-TC028)
-
-| ID | Cenário |
-|----|---------|
-| TC025 | Fechar modal com botão X |
-| TC026 | Abrir modal múltiplas vezes |
-| TC027 | Verificar título e campos do modal |
-| TC028 | Botão Sair limpa campos |
-
-#### 🟣 Tabela/Listagem (TC029-TC032)
-
-| ID | Cenário |
-|----|---------|
-| TC029 | Cadastrar múltiplos produtos |
-| TC030 | Verificar todas as colunas |
-| TC031 | Tabela vazia inicialmente |
-| TC032 | Verificar dados de linha específica |
-
-#### ⚪ Navegação (TC033-TC034)
-
-| ID | Cenário |
-|----|---------|
-| TC033 | Verificar título da página |
-| TC034 | Botão Criar visível e habilitado |
-
 ---
 
 ## 🏗 Padrão Page Object
