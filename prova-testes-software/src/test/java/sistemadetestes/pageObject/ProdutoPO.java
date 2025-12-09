@@ -4,6 +4,8 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
  * Page Object para a página de Cadastro de Produtos
@@ -11,6 +13,9 @@ import org.openqa.selenium.support.FindBy;
  * para interagir com eles durante os testes automatizados
  */
 public class ProdutoPO extends BasePO {
+
+    // WebDriverWait para esperas explícitas
+    private WebDriverWait wait;
 
     // ==================== ELEMENTOS DO MODAL DE CADASTRO ====================
     
@@ -68,7 +73,6 @@ public class ProdutoPO extends BasePO {
     
     /**
      * Elemento span que exibe mensagens de erro/validação
-     * Seletor CSS: #cadastro-produto .modal-body span#mensagem
      */
     @FindBy(id = "mensagem")
     public WebElement spanMensagem;
@@ -79,6 +83,12 @@ public class ProdutoPO extends BasePO {
     @FindBy(css = "#cadastro-produto .alert")
     public WebElement divAlerta;
     
+    /**
+     * Modal de cadastro de produto
+     */
+    @FindBy(id = "cadastro-produto")
+    public WebElement modalCadastro;
+    
     // ==================== TABELA ====================
     
     /**
@@ -86,12 +96,6 @@ public class ProdutoPO extends BasePO {
      */
     @FindBy(css = "table tbody")
     public WebElement tabelaCorpo;
-    
-    /**
-     * Primeira linha da tabela de produtos (após cadastro)
-     */
-    @FindBy(css = "table tbody tr:first-child")
-    public WebElement primeiraLinhaTabelaProdutos;
     
     /**
      * Primeira coluna (código) da primeira linha da tabela
@@ -113,17 +117,21 @@ public class ProdutoPO extends BasePO {
      */
     public ProdutoPO(WebDriver driver) {
         super(driver);
+        // Inicializa o WebDriverWait com timeout de 10 segundos
+        this.wait = new WebDriverWait(driver, 2);
     }
 
     // ==================== MÉTODOS AUXILIARES ====================
     
     /**
      * Método para escrever texto em um campo de input
-     * Limpa o campo antes de escrever e pressiona TAB ao final
+     * Aguarda o elemento estar visível e clicável antes de interagir
      * @param input Elemento de input onde será escrito
      * @param texto Texto a ser escrito no campo
      */
     public void escrever(WebElement input, String texto) {
+        // Aguarda o elemento estar clicável
+        wait.until(ExpectedConditions.elementToBeClickable(input));
         input.clear();
         input.sendKeys(texto + Keys.TAB);
     }
@@ -133,6 +141,8 @@ public class ProdutoPO extends BasePO {
      * @return Texto da mensagem exibida
      */
     public String obterMensagem() {
+        // Aguarda a mensagem estar visível
+        wait.until(ExpectedConditions.visibilityOf(spanMensagem));
         return this.spanMensagem.getText();
     }
     
@@ -146,32 +156,40 @@ public class ProdutoPO extends BasePO {
     
     /**
      * Clica no botão "Criar" para abrir o modal de cadastro de produto
+     * e aguarda o modal ficar visível
      */
     public void clicarBotaoCriar() {
+        // Primeiro clique: registra o evento jQuery
         buttonCriar.click();
+        
+        // Segundo clique: efetivamente abre o modal
+        buttonCriar.click();
+        
+        // Aguarda o modal ficar visível (classe 'show' adicionada pelo Bootstrap)
+        wait.until(ExpectedConditions.attributeContains(modalCadastro, "class", "show"));
+        
+        // Aguarda o campo código estar clicável (garante que o modal está pronto)
+        wait.until(ExpectedConditions.elementToBeClickable(inputCodigo));
     }
     
     /**
      * Clica no botão "Salvar" para tentar salvar o produto
      */
     public void clicarBotaoSalvar() {
+        wait.until(ExpectedConditions.elementToBeClickable(buttonSalvar));
         buttonSalvar.click();
+        
     }
     
     /**
      * Clica no botão "Sair" para fechar o modal
      */
     public void clicarBotaoSair() {
+        wait.until(ExpectedConditions.elementToBeClickable(buttonSair));
         buttonSair.click();
-    }
-    
-    /**
-     * Verifica se a div de alerta está visível (não tem a classe 'esconder')
-     * @return true se o alerta estiver visível, false caso contrário
-     */
-    public boolean alertaEstaVisivel() {
-        String classes = divAlerta.getAttribute("class");
-        return !classes.contains("esconder");
+        buttonSair.click();
+        // Aguarda o modal fechar (ficar invisível)
+        wait.until(ExpectedConditions.invisibilityOf(modalCadastro));
     }
     
     /**
@@ -179,8 +197,12 @@ public class ProdutoPO extends BasePO {
      * @return true se existir pelo menos uma linha na tabela, false caso contrário
      */
     public boolean existeProdutoNaTabela() {
-        String html = tabelaCorpo.getAttribute("innerHTML");
-        return html.contains("<tr>");
+        try {
+            String html = tabelaCorpo.getAttribute("innerHTML");
+            return html.contains("<tr>");
+        } catch (Exception e) {
+            return false;
+        }
     }
     
     /**
@@ -188,6 +210,7 @@ public class ProdutoPO extends BasePO {
      * @return Código do primeiro produto
      */
     public String obterCodigoPrimeiroProduto() {
+        wait.until(ExpectedConditions.visibilityOf(primeiraLinhaCodigo));
         return primeiraLinhaCodigo.getText();
     }
     
@@ -196,6 +219,7 @@ public class ProdutoPO extends BasePO {
      * @return Nome do primeiro produto
      */
     public String obterNomePrimeiroProduto() {
+        wait.until(ExpectedConditions.visibilityOf(primeiraLinhaNome));
         return primeiraLinhaNome.getText();
     }
 
@@ -230,14 +254,6 @@ public class ProdutoPO extends BasePO {
      */
     public void executarAcaoDeCadastrar(String codigo, String nome, String quantidade, String valor, String data) {
         clicarBotaoCriar();
-        
-        // Pequena pausa para garantir que o modal abriu
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        
         preencherFormulario(codigo, nome, quantidade, valor, data);
         clicarBotaoSalvar();
     }
